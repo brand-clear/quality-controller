@@ -1,0 +1,50 @@
+version "5.0"
+#======================================================
+# Finalize QC report and save PDF to network.
+#------------------------------------------------------
+
+
+DECLARE refObject
+DECLARE report
+DECLARE inspector
+DECLARE revision
+DECLARE errorStatus
+DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
+DECLARE reportPath "Q:\Quality Control\quality_controller\data\submitted reports"
+
+
+# Get reference object name and active report
+TREEVIEW REFERENCE NAME GET ( 1, refObject )
+MACRO STRING REPLACE ( $refObject, ".stp", "", , , refObject )
+FORMATTED_REPORT ACTIVE GET ( report )
+
+# Get and validate user input
+MACRO INPUT STRING ( inspector, , "Inspector name:", "" )
+IF $inspector == "0"
+    MACRO END ( "Error" )
+ENDIF
+
+MACRO INPUT STRING ( refObject, , "Filename:", $refObject )
+IF $refObject == "0"
+    MACRO END ( "Error" )
+ENDIF
+
+MACRO INPUT STRING ( revision, , "Revision number:", "001" )
+IF $revision == "0"
+    MACRO END ( "Error" )
+ENDIF
+
+# Assign user input to report fields
+FORMATTED_REPORT PROPERTIES STANDARD ( $report, "Title", $refObject)
+FORMATTED_REPORT PROPERTIES STANDARD ( $report, "Author", $inspector)
+FORMATTED_REPORT PROPERTIES CUSTOM ( $report, "Revision", $revision)
+
+# Export report as pdf
+FILE EXPORT_FORMATTED_REPORT PDF ( "${reportPath}\${refObject}.pdf", "On", $report )
+
+MACRO EXEC ( "${macroPath}\data-save.pwmacro" )
+
+MACRO GET_ERROR_STATUS ( errorStatus )
+IF $errorStatus == "Error"
+    MACRO PAUSE ( "Warning", "An error occurred while saving this report." )
+ENDIF

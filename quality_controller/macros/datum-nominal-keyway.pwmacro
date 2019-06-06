@@ -1,0 +1,53 @@
+version "5.0"
+#=====================================================
+# This script prompts the user to select a nominal  
+# keyway face per a given input.
+#
+# Parameters
+# ----------
+# $1 : Keyway face number
+#     {"1", "2"}
+#-----------------------------------------------------
+
+
+DECLARE component
+DECLARE errorStatus
+DECLARE previousCount
+DECLARE currentCount
+DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
+
+
+TREEVIEW FEATURE COUNT GET ( previousCount )
+
+# Select nominal feature from CAD model and assign datum label
+TREEVIEW FEATURE VIEW HIDE ALL
+MACRO GUIDING_INSTRUCTIONS ( "On", "Select keyway face $1 from CAD model", "Right-click when done", ,"Off")
+FEATURE PRIMITIVE EXTRACT_FROM_NURBS PICK
+
+# Check for user mistake or cancellation
+MACRO GET_ERROR_STATUS ( errorStatus )
+IF $errorStatus == "Error"
+    MACRO END ( "Error" )
+ENDIF
+
+TREEVIEW FEATURE COUNT GET ( currentCount )
+
+
+# Validate environment
+IF EXPR_I ( $previousCount + 1 ) != $currentCount
+    MACRO PAUSE ( "Error", "Invalid datum environment: Inconsistent feature creation." )
+    MACRO END ( "Error" )
+ENDIF
+
+
+# Set feature as nominal
+# This is to correct the unexpected behavior of primitive types 
+# sometimes getting swapped automatically.
+TREEVIEW FEATURE PROPERTIES CONTENTS GET ( component )
+IF $component == "Measured"
+    FEATURE NOMINAL_MEASURED SWAP_PRIMITIVES ( )
+ENDIF
+
+
+# Prep for next operation
+MACRO EXEC ( "${macroPath}\process-conclude.pwmacro" )

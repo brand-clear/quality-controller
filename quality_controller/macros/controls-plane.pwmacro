@@ -1,0 +1,27 @@
+version "5.0"
+#====================================================
+# Default metrics for plane features.
+#----------------------------------------------------
+
+
+DECLARE measured
+DECLARE tolerance
+DECLARE control
+DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
+
+
+# Assuming component is revolved around X
+MEASURE CONTROL ADD ( "Dimensional", "Centroid X" )
+
+SET measured "Flatness"
+SET tolerance 0.002
+MACRO EXEC ( "${macroPath}\metric-sansdatum.pwmacro", measured, tolerance, control )
+
+SET measured "Total Runout"
+SET tolerance 0.003
+MACRO EXEC ( "${macroPath}\metric-runout.pwmacro", measured, tolerance, control, "A", "B" )
+
+SET measured "Surface Profile"
+SET tolerance 0.005
+MACRO EXEC ( "${macroPath}\metric-sansdatum.pwmacro", measured, tolerance, control )
+

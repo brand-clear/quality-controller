@@ -1,0 +1,33 @@
+version "5.0"
+#==================================================
+# This script prompts the user to specify alignment  
+# constraints and then launches the appropriate 
+# alignment script.
+#
+# The "shared" variable "alignMethod" is created
+# here, but only later used by an external script.
+#--------------------------------------------------
+
+
+DECLARE align2D
+DECLARE align3DHole
+DECLARE align3DKey
+DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
+
+
+MACRO SHARED_VARIABLE DELETE ( "alignMethod" )
+MACRO INPUT MULTIPLE_PARAMETERS ( "", "Specify your alignment constraints.", { "string", "2D Alignment", "0", "string", "3D Alignment: Hole", "0", "string", "3D Alignment: Keyway", "0" }, align2D, align3DHole, align3DKey )
+
+# If multiple options are selected, only the first condition
+# in the sequence is launched.
+IF $align2D == "1"
+    MACRO SHARED_VARIABLE CREATE ( "alignMethod", "2D" )
+    MACRO EXEC ( "${macroPath}\alignment-2D.pwmacro" )
+ELSEIF $align3DHole == "1"
+    MACRO SHARED_VARIABLE CREATE ( "alignMethod", "3DHole" )
+    MACRO EXEC ( "${macroPath}\alignment-3D-hole.pwmacro" )
+ELSEIF $align3DKey == "1"
+    MACRO SHARED_VARIABLE CREATE ( "alignMethod", "3DKeyway" )
+    MACRO EXEC ( "${macroPath}\alignment-3D-keyway.pwmacro" )
+ENDIF
+

@@ -1,0 +1,20 @@
+version "5.0"
+#======================================================
+# Default metrics for cylindrical features.
+#------------------------------------------------------
+
+
+DECLARE measured
+DECLARE tolerance
+DECLARE control
+DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
+
+
+SET measured "Cylindricity"
+SET tolerance 0.003
+MACRO EXEC ( "${macroPath}\metric-sansdatum.pwmacro", measured, tolerance, control )
+
+
+SET measured "Total Runout"
+SET tolerance 0.003
+MACRO EXEC ( "${macroPath}\metric-runout.pwmacro", measured, tolerance, control, "A", "B" )

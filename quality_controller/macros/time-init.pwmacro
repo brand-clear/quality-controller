@@ -1,0 +1,10 @@
+version "5.0"
+#==================================================
+# This script initializes a "shared" variable 
+# called "startTime" which is later used by an
+# external script.
+#--------------------------------------------------
+DECLARE startTime
+MACRO CHRONOMETER GET ( startTime )
+MACRO SHARED_VARIABLE DELETE ( "startTime" )
+MACRO SHARED_VARIABLE CREATE ( "startTime", $startTime )

@@ -1,0 +1,54 @@
+version "5.0"
+#======================================================
+# Return a selected plane's centroids per a given
+# primitive type.
+#
+# Parameters
+# ----------
+# $1 : Empty centroid X control variable
+#
+# $2 : Empty centroid Y control variable
+#
+# $3 : Empty centroid Z control variable
+#
+# $4 : Primitive type
+#    {"Nominal", "Measured"}
+#
+# Returns
+# -------
+# 1 : X
+#     Primitive coordinate
+#
+# 2 : Y
+#     Primitive coordinate
+#
+# 3 : Z
+#     Primitive coordinate
+#------------------------------------------------------
+
+
+DECLARE X
+DECLARE Y
+DECLARE Z
+DECLARE XControl
+DECLARE YControl
+DECLARE ZControl
+
+
+MEASURE CONTROL ADD ( "Dimensional", "Centroid X", XControl )
+MEASURE CONTROL ADD ( "Dimensional", "Centroid Y", YControl )
+MEASURE CONTROL ADD ( "Dimensional", "Centroid Z", ZControl )
+
+IF $4 == "Nominal"
+    MEASURE CONTROL NOMINAL GET ( "Centroid X", X, )
+    MEASURE CONTROL NOMINAL GET ( "Centroid Y", Y, )
+    MEASURE CONTROL NOMINAL GET ( "Centroid Z", Z, )
+ELSEIF $4 == "Measured"
+    MEASURE CONTROL MEASURED GET ( "Centroid X", X, )
+    MEASURE CONTROL MEASURED GET ( "Centroid Y", Y, )
+    MEASURE CONTROL MEASURED GET ( "Centroid Z", Z, )
+ENDIF
+
+MACRO OUTPUT_ARGUMENT ( 1, $X )
+MACRO OUTPUT_ARGUMENT ( 2, $Y )
+MACRO OUTPUT_ARGUMENT ( 3, $Z )

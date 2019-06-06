@@ -1,0 +1,37 @@
+version "5.0"
+#=====================================================
+# Verify drawing dimension on a pass/fail basis.
+#-----------------------------------------------------
+
+
+DECLARE name
+DECLARE pass
+
+
+# Query inspector
+MACRO INPUT MULTIPLE_PARAMETERS ( "Qualitative Measurement", "", { "string", "Name:", "", "integer", "Pass?", 1 }, name, pass )
+
+
+# Missing name
+IF $name == ""
+    MACRO END ( "Error" )
+ENDIF
+
+# Invalid test parameter
+IF $pass > 1
+    MACRO PAUSE ( "Warning", {"Invalid input.", "0 = Fail", "1 = Pass"} )
+    MACRO END ( "Error" )
+ENDIF
+
+
+MEASURE CUSTOM_MEASUREMENT QUALITATIVE CREATE NUMERICALLY ( 0, 0, 0, , , , $name )
+
+
+IF $pass == 1
+    MEASURE CONTROL TEST TOLERANCE_ZONE_RESULT ( "Custom", "Within positive safe zone", $name )
+ELSE
+    MEASURE CONTROL TEST TOLERANCE_ZONE_RESULT ( "Custom", "Beyond upper tolerance limit", $name )
+ENDIF
+
+# Send to report
+REPORT_ITEM TABLE FROM_SELECTED_OBJECTS ( )

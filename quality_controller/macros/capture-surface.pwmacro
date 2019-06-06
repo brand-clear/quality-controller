@@ -1,0 +1,37 @@
+version "5.0"
+#======================================================
+# Probe surface features and send to formatted report.
+#------------------------------------------------------
+
+
+DECLARE finished 0
+DECLARE previousCount
+DECLARE currentCount
+DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
+
+
+WHILE $finished == 0
+    
+    # Get reference to process state
+    TREEVIEW COMPARISON_POINT COUNT GET ( previousCount )
+    
+    TREEVIEW REFERENCE SELECT ( 1 )
+    MEASURE BUILD_INSPECT PROBE 
+    
+    TREEVIEW COMPARISON_POINT COUNT GET ( currentCount )
+    
+    # Verify that points were taken
+    IF $previousCount < $currentCount
+        TREEVIEW REFERENCE SELECT ( 1 )
+        MACRO EXEC ( "${macroPath}\capture-snapshot.pwmacro" )
+    ELSE
+        SET finished 1
+        CONTINUE
+    ENDIF
+    
+    # Set view for next round
+    TREEVIEW OBJECT SELECT NONE
+    TREEVIEW COMPARISON_POINT SELECT ALL
+    TREEVIEW OBJECT VIEW HIDE ( )
+    
+ENDWHILE

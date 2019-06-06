@@ -1,0 +1,37 @@
+version "5.0"
+#===================================================
+# Probe cone features and send to formatted report.
+#---------------------------------------------------
+
+
+DECLARE finished 0
+DECLARE previousCount
+DECLARE currentCount
+DECLARE control
+DECLARE measured "Surface Profile"
+DECLARE tolerance 0.003
+DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
+
+
+FEATURE PRIMITIVE OPTIONS PROBE MANUAL EXTRACT_NOMINAL ( "On" )
+
+WHILE $finished == 0
+    
+    TREEVIEW FEATURE VIEW HIDE ALL
+    TREEVIEW FEATURE COUNT GET ( previousCount )
+    FEATURE PRIMITIVE CONE PROBE ( "Measured" )
+    TREEVIEW FEATURE COUNT GET ( currentCount )
+    
+    # This condition indicates that a new dimension was not captured
+    IF $previousCount == $currentCount
+        SET finished 1
+        CONTINUE
+    ENDIF
+    
+    # Get metrics
+    MACRO EXEC ( "${macroPath}\metric-sansdatum.pwmacro", measured, tolerance, control )
+    
+    # Send data to report
+    MACRO EXEC ( "${macroPath}\capture-snapshot.pwmacro" )
+    
+ENDWHILE

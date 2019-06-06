@@ -1,0 +1,20 @@
+version "5.0"
+#===================================================
+# This script attempts to establish a connection 
+# with the Faro Arm.
+#---------------------------------------------------
+
+
+DECLARE connection
+
+
+# Attempt to connect
+PROBE DEVICE ( "Faro Arm" )
+DIGITIZE DEVICE CONNECT ( "On" )
+
+# Check for errors
+MACRO GET_ERROR_STATUS ( connection )
+IF $connection == "Error"
+    MACRO PAUSE ( $connection, "Verify that Faro Arm is plugged in and try again." )
+    MACRO END ( "Error" )
+ENDIF

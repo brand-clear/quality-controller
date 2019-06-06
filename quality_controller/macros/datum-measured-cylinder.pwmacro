@@ -1,0 +1,59 @@
+version "5.0"
+#=====================================================
+# This script prompts the user to probe a cylindrical  
+# datum feature per a given input.
+#
+# Parameters
+# ----------
+# $1 : Datum label
+#     {"A", "B", "C"}
+#-----------------------------------------------------
+
+
+DECLARE name "datum cylinder $1"
+DECLARE measured
+DECLARE tolerance
+DECLARE controlName
+DECLARE cylindricity
+DECLARE tryAgain 1
+DECLARE errorStatus
+DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
+
+
+MACRO GUIDING_INSTRUCTIONS ( "On", "Probe ${name}", , , "off")
+
+WHILE $tryAgain == 1
+    
+    # Probe cylinder
+    FEATURE PRIMITIVE CYLINDER PROBE ( "Measured", $name )
+    
+    # Cylindricity test
+    SET measured "Cylindricity"
+    SET tolerance 0.003
+    MACRO EXEC ( "${macroPath}\metric-sansdatum.pwmacro", measured, tolerance, controlName )
+    IF $measured > $tolerance
+        MACRO INPUT QUESTION ( tryAgain, {"The measured cylindricity exceeeds the datum tolerance of ${tolerance}.", "Do you want to try again?"} )
+        IF  $tryAgain == 1
+            MEASURE CONTROL REMOVE ( $controlName )
+            CONTINUE
+        ENDIF
+    ELSE
+        SET tryAgain 0
+    ENDIF
+    
+    
+    TREEVIEW OBJECT VIEW RESTORE ( $name )
+    # If no cylinder was probed an error will be raised
+    # when trying to restore the feature.
+    MACRO GET_ERROR_STATUS ( errorStatus )
+    IF $errorStatus == "Error"
+        MACRO END ( "Error" )
+    ENDIF
+    
+    MACRO EXEC ( "${macroPath}\capture-snapshot.pwmacro" )
+    
+ENDWHILE
+
+
+# Prep for next operation
+MACRO EXEC ( "${macroPath}\process-conclude.pwmacro" )

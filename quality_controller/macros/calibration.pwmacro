@@ -1,0 +1,123 @@
+version "5.0"
+#===================================================
+# This script guides the user through a ball probe
+# calibration routine.
+#---------------------------------------------------
+
+# Variables
+DECLARE sphere_bar_nominal 25.4180
+DECLARE sphere_bar_R1_dev
+DECLARE sphere_bar_R2_dev
+DECLARE sphere_bar_R3_dev
+DECLARE sphere1_readings_bad 0
+DECLARE sphere2_readings_bad 0
+DECLARE cone_bar_nominal 20.4906
+DECLARE cone_bar_R1_dev
+DECLARE cone_bar_R2_dev
+DECLARE cone_bar_R3_dev
+DECLARE macro_error
+DECLARE dim_unacceptable 1
+DECLARE active_report
+DECLARE inspector
+DECLARE month
+DECLARE day
+DECLARE year
+DECLARE upper_tolerance 0.0010
+DECLARE lower_tolerance -0.0010
+DECLARE reportPath "Q:\DRAFT\Polyworks\Report Layouts"
+DECLARE logPath "Q:\Quality Control\quality_controller\log"
+
+PROBE DISPLAY DIGITAL_READOUT ( "On" )
+
+# Check for connected device
+DIGITIZE DEVICE CONNECT ( "On" )
+MACRO GET_ERROR_STATUS ( macro_error )
+IF $macro_error == "Error"
+    MACRO PAUSE ( , "No connection with probing device found." )
+    MACRO END ( "Error" )
+ENDIF
+
+# Clear existing objects
+TREEVIEW OBJECT SELECT ALL
+EDIT OBJECT DELETE ( )   
+
+# Sphere1
+MACRO EXEC ( "Q:\DRAFT\Polyworks\QC Resources\Macros\sphere1.pwmacro" )
+
+# Sphere2
+MACRO EXEC ( "Q:\DRAFT\Polyworks\QC Resources\Macros\sphere2.pwmacro" )
+
+# Create sphere reading distances and set nominal
+TREEVIEW FEATURE SELECT NONE ( "On" )
+FEATURE DISTANCE CREATE ( "Sphere 1 R1", "Sphere 2 R1", "Sphere Bar R1 Distance" )
+MEASURE CONTROL NOMINAL ( "3D Distance", $sphere_bar_nominal )
+MEASURE CONTROL TOLERANCE_ZONE LIMITS ( "3D Distance", $upper_tolerance, , , $lower_tolerance, )
+MEASURE CONTROL DEVIATION GET ( sphere_bar_R1_dev )
+###
+TREEVIEW FEATURE SELECT NONE ( "On" )
+FEATURE DISTANCE CREATE ( "Sphere 1 R2", "Sphere 2 R2", "Sphere Bar R2 Distance" )
+MEASURE CONTROL NOMINAL ( "3D Distance", $sphere_bar_nominal )
+MEASURE CONTROL TOLERANCE_ZONE LIMITS ( "3D Distance", $upper_tolerance, , , $lower_tolerance, )
+MEASURE CONTROL DEVIATION GET ( sphere_bar_R2_dev )
+###
+TREEVIEW FEATURE SELECT NONE ( "On" )
+FEATURE DISTANCE CREATE ( "Sphere 1 R3", "Sphere 2 R3", "Sphere Bar R3 Distance" )
+MEASURE CONTROL NOMINAL ( "3D Distance", $sphere_bar_nominal )
+MEASURE CONTROL TOLERANCE_ZONE LIMITS ( "3D Distance", $upper_tolerance, , , $lower_tolerance, )
+MEASURE CONTROL DEVIATION GET ( sphere_bar_R3_dev )
+
+# Points
+MACRO PAUSE ( "Set Arm", "Set arm position at 0 degrees." )
+FEATURE PRIMITIVE POINT PROBE ( , "Point 1 R1" )
+MACRO PAUSE ( "Set Arm", "Set arm position at 90 degrees." )
+FEATURE PRIMITIVE POINT PROBE ( , "Point 1 R2" )
+MACRO PAUSE ( "Set Arm", "Set arm position at 180 degrees." )
+FEATURE PRIMITIVE POINT PROBE ( , "Point 1 R3" )
+MACRO PAUSE ( "Set Arm", "Set arm position at 0 degrees." )
+FEATURE PRIMITIVE POINT PROBE ( , "Point 2 R1" )
+MACRO PAUSE ( "Set Arm", "Set arm position at 90 degrees." )
+FEATURE PRIMITIVE POINT PROBE ( , "Point 2 R2" )
+MACRO PAUSE ( "Set Arm", "Set arm position at 180 degrees." )
+FEATURE PRIMITIVE POINT PROBE ( , "Point 2 R3" )
+
+# Create point reading distances and set nominal
+TREEVIEW FEATURE SELECT NONE ( "On" )
+FEATURE DISTANCE CREATE ( "Point 1 R1", "Point 2 R1", "Cone Bar R1 Distance" )
+MEASURE CONTROL NOMINAL ( "3D Distance", $cone_bar_nominal )
+MEASURE CONTROL TOLERANCE_ZONE LIMITS ( "3D Distance", $upper_tolerance, , , $lower_tolerance, )
+MEASURE CONTROL DEVIATION GET ( cone_bar_R1_dev )
+###
+TREEVIEW FEATURE SELECT NONE ( "On" )
+FEATURE DISTANCE CREATE ( "Point 1 R2", "Point 2 R2", "Cone Bar R2 Distance" )
+MEASURE CONTROL NOMINAL ( "3D Distance", $cone_bar_nominal )
+MEASURE CONTROL TOLERANCE_ZONE LIMITS ( "3D Distance", $upper_tolerance, , , $lower_tolerance, )
+MEASURE CONTROL DEVIATION GET ( cone_bar_R2_dev )
+###
+TREEVIEW FEATURE SELECT NONE ( "On" )
+FEATURE DISTANCE CREATE ( "Point 1 R3", "Point 2 R3", "Cone Bar R3 Distance" )
+MEASURE CONTROL NOMINAL ( "3D Distance", $cone_bar_nominal )
+MEASURE CONTROL TOLERANCE_ZONE LIMITS ( "3D Distance", $upper_tolerance, , , $lower_tolerance, )
+MEASURE CONTROL DEVIATION GET ( cone_bar_R3_dev )
+
+# Send all features to report
+FORMATTED_REPORT CREATE USING_LAYOUT ( "report 1", "${reportPath}\Sulzer Probe Calibration.ezl" )
+TREEVIEW FEATURE SELECT ALL ( "On" )
+REPORT_ITEM TABLE FROM_SELECTED_OBJECTS (  )
+
+# Get technician name
+MACRO INPUT STRING ( inspector, , "Inspector name:", "G.Viera" )
+IF $inspector == "0"
+    MACRO END ( "Error" )
+ENDIF
+
+# Fill active report fields
+FORMATTED_REPORT ACTIVE GET ( active_report )
+FORMATTED_REPORT PROPERTIES STANDARD ( $active_report, "Title", "FARO Arm Calibration")
+FORMATTED_REPORT PROPERTIES STANDARD ( $active_report, "Author", $inspector)
+FORMATTED_REPORT PROPERTIES CUSTOM ( $active_report, "Revision", "001")
+
+# Get date
+SYSTEM DATE_TIME GET ( year, month, day )
+# Export report as pdf
+FILE EXPORT_FORMATTED_REPORT PDF ( "${logPath}\FARO Arm Calibration $month-$day-$year.pdf", "On", $active_report )
+

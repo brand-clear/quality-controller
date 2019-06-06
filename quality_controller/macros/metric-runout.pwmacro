@@ -1,0 +1,41 @@
+version "5.0"
+#======================================================
+# Measure surface runout.
+#
+# Parameters
+# ----------
+# $1 : Runout metric
+#     {"Total Runout"}
+#
+# $2 : Acceptable deviation
+#
+# $3 : Empty variable
+#
+# $4 : Primary datum reference
+#     {"A", "B", "C"}
+#
+# $5 : Secondary datum reference
+#     {"A", "B", "C"}
+#
+# Returns
+# -------
+# 1 : runoutMetric
+#     Measured runout deviation
+#
+# 3 : runoutName
+#     Reference to variable containing runout control
+#------------------------------------------------------
+
+
+DECLARE runoutMetric
+DECLARE runoutName
+
+
+MEASURE CONTROL ADD ( "GD&T", $1, runoutName)
+MEASURE CONTROL DATUM_FEATURES ( $runoutName, $4, $5 )
+MEASURE CONTROL TOLERANCE_ZONE LIMITS ( $runoutName, $2, , , , )
+MEASURE CONTROL MEASURED GET ( $runoutName, runoutMetric )
+MEASURE CONTROL DATUM_FEATURES ( $runoutName, $4, $5, , )
+
+MACRO OUTPUT_ARGUMENT ( 1, $runoutMetric )
+MACRO OUTPUT_ARGUMENT ( 3, $runoutName )

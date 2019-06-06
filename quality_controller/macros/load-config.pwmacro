@@ -1,0 +1,13 @@
+version "5.0"
+#==================================================
+# This script loads the latest QC user config.
+#--------------------------------------------------
+
+DECLARE errorStatus
+
+
+CONFIG LOAD ( "Q:\Quality Control\quality_controller\data\QCUserConfig.pwcfg" )
+MACRO GET_ERROR_STATUS ( errorStatus )
+IF $errorStatus == "Error"
+    MACRO PAUSE ( "UserConfigError", {"The user configuration could not updated. Make sure all workspaces", "are closed and try again."} )
+ENDIF

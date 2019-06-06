@@ -1,0 +1,38 @@
+version "5.0"
+#==================================================
+# This script collects inspection data and saves it
+# to a csv file.
+#
+# The following "shared" variables were created via
+# external scripts and saved to local variables of
+# the same name:
+# "startTime"
+# "alignMethod"
+#--------------------------------------------------
+
+
+DECLARE startTime
+DECLARE endTime
+DECLARE elapsedTime
+DECLARE refName
+DECLARE featureCount
+DECLARE alignMethod
+DECLARE csvPath "Q:\Quality Control\quality_controller\data\cost.csv"
+
+
+# Get elapsed time
+MACRO CHRONOMETER GET ( endTime )
+MACRO SHARED_VARIABLE GET_VALUE ( "startTime", startTime )
+SET elapsedTime EXPR ( $endTime - $startTime )
+SET elapsedTime EXPR ( $elapsedTime / 60000 )
+MACRO ECHO ( "${elapsedTime} minutes" )
+
+# Get method of alignment
+MACRO SHARED_VARIABLE GET_VALUE ( "alignMethod", alignMethod )
+
+# Get part info
+TREEVIEW FEATURE COUNT GET ( featureCount )
+TREEVIEW REFERENCE NAME GET ( refName )
+
+# Save data to csv file
+DATA_FILE APPEND LINES ( $csvPath, "${refName}, ${alignMethod}, ${featureCount}, ${elapsedTime}" )

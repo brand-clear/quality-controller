@@ -1,0 +1,6 @@
+version "5.0"
+#=======================================================
+# Launch body diameter probing session.
+#-------------------------------------------------------
+
+MACRO EXEC ( "Q:\Quality Control\quality_controller\macros\capture-cylinder.pwmacro", "Body" )

@@ -1,0 +1,34 @@
+version "5.0"
+#===================================================
+# Probe plane features and send to formatted report.
+#---------------------------------------------------
+
+
+DECLARE finished 0
+DECLARE previousCount
+DECLARE currentCount
+DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
+
+
+FEATURE PRIMITIVE OPTIONS PROBE MANUAL EXTRACT_NOMINAL ( "On" )
+
+WHILE $finished == 0
+    
+    TREEVIEW FEATURE VIEW HIDE ALL
+    TREEVIEW FEATURE COUNT GET ( previousCount )
+    FEATURE PRIMITIVE PLANE PROBE ( "Measured" )
+    TREEVIEW FEATURE COUNT GET ( currentCount )
+    
+    # This condition indicates that no dimension was captured
+    IF $previousCount == $currentCount
+        SET finished 1
+        CONTINUE
+    ENDIF
+    
+    # Get plane metrics
+    MACRO EXEC ( "${macroPath}\controls-plane.pwmacro" )
+    
+    # Send data to report
+    MACRO EXEC ( "${macroPath}\capture-snapshot.pwmacro" )
+    
+ENDWHILE

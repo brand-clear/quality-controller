@@ -1,0 +1,8 @@
+version "5.0"
+#=======================================================
+# This script deletes all existing work from the current
+# session.
+#-------------------------------------------------------
+MACRO GUIDING_INSTRUCTIONS ( "Off" )
+TREEVIEW FEATURE SELECT ALL ( "On" )
+EDIT OBJECT DELETE (  )

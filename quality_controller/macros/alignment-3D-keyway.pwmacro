@@ -1,0 +1,125 @@
+version "5.0"
+#=====================================================
+# This script provides 3D alignment functionality 
+# where the 3rd alignment feature is a keyway.
+#-----------------------------------------------------
+
+
+DECLARE errorStatus
+DECLARE index 1
+DECLARE XNom
+DECLARE YNom
+DECLARE ZNom
+DECLARE XMeas
+DECLARE YMeas
+DECLARE ZMeas
+DECLARE point "alignment point"
+DECLARE k1Name "keyway face 1"
+DECLARE k2Name "keyway face 2"
+DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
+
+
+# Define nominal datum components
+MACRO EXEC ( "${macroPath}\datum-nominal.pwmacro", "cylinder", "A" )
+MACRO GET_ERROR_STATUS ( errorStatus )
+IF $errorStatus == "Error"
+    MACRO EXEC ( "${macroPath}\process-reset.pwmacro" )
+    MACRO END ( "Error" )
+ENDIF
+
+
+MACRO EXEC ( "${macroPath}\datum-nominal.pwmacro" , "plane", "B")
+MACRO GET_ERROR_STATUS ( errorStatus )
+IF $errorStatus == "Error"
+    MACRO EXEC ( "${macroPath}\process-reset.pwmacro" )
+    MACRO END ( "Error" )
+ENDIF
+
+
+MACRO EXEC ( "${macroPath}\datum-nominal-keyway.pwmacro", "1" )
+MACRO GET_ERROR_STATUS ( errorStatus )
+IF $errorStatus == "Error"
+    MACRO EXEC ( "${macroPath}\process-reset.pwmacro" )
+    MACRO END ( "Error" )
+ENDIF
+
+
+MACRO EXEC ( "${macroPath}\datum-nominal-keyway.pwmacro", "2" )
+MACRO GET_ERROR_STATUS ( errorStatus )
+IF $errorStatus == "Error"
+    MACRO EXEC ( "${macroPath}\process-reset.pwmacro" )
+    MACRO END ( "Error" )
+ENDIF
+
+
+# Rename keyway features
+TREEVIEW FEATURE PLANE SELECT ( 2 )
+TREEVIEW OBJECT PROPERTIES NAME ( $k1Name )
+TREEVIEW FEATURE SELECT NONE ( "On" )
+TREEVIEW FEATURE PLANE SELECT ( 3 )
+TREEVIEW OBJECT PROPERTIES NAME ( $k2Name )
+TREEVIEW FEATURE SELECT NONE ( "On" )
+
+
+# Create alignment midplane from keyway faces
+TREEVIEW FEATURE PLANE SELECT RANGE ( 2, 3 )
+FEATURE PRIMITIVE PLANE FROM_PLANES ( "alignment midplane" )
+
+
+# Define measured datum components
+MACRO EXEC ( "${macroPath}\datum-measured-cylinder.pwmacro", "A" )
+MACRO GET_ERROR_STATUS ( errorStatus )
+IF $errorStatus == "Error"
+    MACRO EXEC ( "${macroPath}\process-reset.pwmacro" )
+    MACRO END ( "Error" )
+ENDIF
+
+MACRO EXEC ( "${macroPath}\datum-measured-plane.pwmacro", "B", "A" )
+MACRO GET_ERROR_STATUS ( errorStatus )
+IF $errorStatus == "Error"
+    MACRO EXEC ( "${macroPath}\process-reset.pwmacro" )
+    MACRO END ( "Error" )
+ENDIF
+
+MACRO EXEC ( "${macroPath}\datum-measured-keyway.pwmacro", $k1Name )
+MACRO GET_ERROR_STATUS ( errorStatus )
+IF $errorStatus == "Error"
+    MACRO EXEC ( "${macroPath}\process-reset.pwmacro" )
+    MACRO END ( "Error" )
+ENDIF
+
+MACRO EXEC ( "${macroPath}\datum-measured-keyway.pwmacro", $k2Name )
+MACRO GET_ERROR_STATUS ( errorStatus )
+IF $errorStatus == "Error"
+    MACRO EXEC ( "${macroPath}\process-reset.pwmacro" )
+    MACRO END ( "Error" )
+ENDIF
+
+
+# Create alignment point from alignment midplane centroids
+TREEVIEW FEATURE PLANE SELECT ( 4 )
+MACRO EXEC ( "${macroPath}\coordinates-plane.pwmacro", XNom, YNom, ZNom, "Nominal" )
+FEATURE PRIMITIVE POINT CREATE ( $XNom, $YNom, $ZNom, "Nominal", $point )
+TREEVIEW FEATURE SELECT NONE ( "On" )
+TREEVIEW FEATURE PLANE SELECT ( 4 )
+MACRO EXEC ( "${macroPath}\coordinates-plane.pwmacro", XMeas, YMeas, ZMeas, "Measured" )
+FEATURE PRIMITIVE POINT CREATE ( $XMeas, $YMeas, $ZMeas, "Measured", $point )
+
+# Align part
+ALIGN PLANE_AXIS_CENTER_POINT SEQUENCE ( "PAC" )
+ALIGN PLANE_AXIS_CENTER_POINT ( "datum plane B -meas-", "datum plane B -nom-", "datum cylinder A -meas-", "datum cylinder A -nom-", "alignment point -meas-", "alignment point -nom-", "qc datum alignment 1" )
+
+
+# An error is raised if the nominal alignment features 
+# do not have a measured counterpart.
+MACRO GET_ERROR_STATUS ( errorStatus )
+IF $errorStatus == "Error"
+    MACRO PAUSE ( "AlignmentError", {"This alignment could not be completed with the given parameters.", "Please try again."})
+    MACRO EXEC ( "${macroPath}\process-reset.pwmacro" )
+    MACRO END ( "Error" )
+ENDIF
+
+
+# Prep for next operation
+MACRO EXEC ( "${macroPath}\process-conclude.pwmacro" )
+

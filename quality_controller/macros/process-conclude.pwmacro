@@ -1,0 +1,8 @@
+version "5.0"
+#=======================================================
+# This script resets the 3D scene view by hiding
+# everything except the reference object.
+#-------------------------------------------------------
+MACRO GUIDING_INSTRUCTIONS ( "Off" )
+TREEVIEW FEATURE VIEW HIDE ALL
+TREEVIEW FEATURE SELECT NONE (  )

@@ -1,0 +1,33 @@
+version "5.0"
+#=====================================================
+# Verify drawing dimension with hand measurement.
+#-----------------------------------------------------
+
+
+DECLARE name
+DECLARE nom
+DECLARE meas
+
+# Default tolerances
+DECLARE upper_limit .001
+DECLARE lower_limit -.001
+
+
+# Query inspector
+MACRO INPUT MULTIPLE_PARAMETERS ( "Hand Measurement", "", { "string", "Name:", "", "double", "Nominal:", "", "double", "Measured:", "", "double", "Upper Limit:", $upper_limit, "double", "Lower Limit:", $lower_limit }, name, nom, meas, upper_limit, lower_limit )
+
+
+# Missing name
+IF $name == ""
+    MACRO END ( "Error" )
+ENDIF
+
+
+# Create feature
+MEASURE CUSTOM_MEASUREMENT NUMERICAL CREATE NUMERICALLY ( 0, 0, 0, , , , $name )
+MEASURE CONTROL NOMINAL ( "Custom", $nom, $name )
+MEASURE CONTROL MEASURED ( "Custom", $meas, $name )
+MEASURE CONTROL TOLERANCE_ZONE LIMITS ( "Custom", $upper_limit, , , $lower_limit, $name)
+
+# Send to report
+REPORT_ITEM TABLE FROM_SELECTED_OBJECTS ( )

@@ -1,0 +1,21 @@
+version "5.0"
+#====================================================
+# This script allows the user to start or restart a
+# QC workspace.
+#
+# A restart will erase all existing data with the 
+# user's permission.
+#----------------------------------------------------
+
+
+DECLARE errorStatus
+DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
+
+
+MACRO EXEC ( "${macroPath}\time-init.pwmacro" )
+MACRO EXEC ( "${macroPath}\import.pwmacro" )
+MACRO GET_ERROR_STATUS ( errorStatus )
+IF $errorStatus == "Error"
+    # User requested to reset workspace
+    MACRO EXEC ( "${macroPath}\import.pwmacro" )
+ENDIF

@@ -1,0 +1,6 @@
+version "5.0"
+#===================================================
+# Delete all existing objects from the workspace.
+#---------------------------------------------------
+TREEVIEW OBJECT SELECT ALL
+EDIT OBJECT DELETE (  )

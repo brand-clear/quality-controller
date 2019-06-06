@@ -1,0 +1,33 @@
+version "5.0"
+#======================================================
+# Measure a given GDT control.
+#
+# Parameters
+# ----------
+# $1 : Datum independent GDT metric 
+#     {"Flatness", "Cylindricity", "Surface Profile", "Position"}
+#
+# $2 : Acceptable deviation
+#
+# $3 : Empty variable
+#
+# Returns
+# -------
+# 1 : measured
+#     Measured deviation
+#
+# 3 : controlName
+#     Reference to control variable
+#------------------------------------------------------
+
+
+DECLARE measured
+DECLARE controlName
+
+
+MEASURE CONTROL ADD ( "GD&T", $1, controlName)
+MEASURE CONTROL TOLERANCE_ZONE LIMITS ( $controlName, $2, , , , )
+MEASURE CONTROL MEASURED GET ( $controlName, measured )
+
+MACRO OUTPUT_ARGUMENT ( 1, $measured )
+MACRO OUTPUT_ARGUMENT ( 3, $controlName )

@@ -1,0 +1,10 @@
+version "5.0"
+#====================================================
+# Send project view to formatted report.
+#----------------------------------------------------
+
+
+PROBE DISPLAY DIGITAL_READOUT ( "Off" )
+VIEW POSE CENTER_ON_OBJECTS ( )
+REPORT_ITEM SNAPSHOT CAPTURE ( )
+PROBE DISPLAY DIGITAL_READOUT ( "On" )

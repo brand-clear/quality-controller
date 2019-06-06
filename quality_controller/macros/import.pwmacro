@@ -1,0 +1,69 @@
+version "5.0"
+#=======================================================
+# Import CAD model and initialize formatted report.
+#
+# If a reference object exists, the user has the option
+# to reset the QC workspace.
+#-------------------------------------------------------
+
+
+DECLARE refCount
+DECLARE refObject
+DECLARE errorStatus
+DECLARE restart
+DECLARE refPath "Q:\Quality Control\quality_controller\data\cad models"
+DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
+DECLARE reportPath "Q:\DRAFT\Polyworks\Polyworks\Report Layouts\Sulzer QC Portrait.ezl"
+
+
+TREEVIEW REFERENCE COUNT GET ( refCount )
+
+# An existing reference object indicates an existing workspace,
+# so the user is prompted with the option to reset.
+# It is still possible for other objects to exist without
+# being detected.
+
+IF $refCount == 0
+    
+    MACRO INPUT FILE_PATH ( refObject, , $refPath )
+    FILE IMPORT_REFERENCE NURBS STEP ( $refObject )
+    
+    # Check for import error / user cancellation
+    MACRO GET_ERROR_STATUS ( errorStatus )
+    IF $errorStatus == "Error"
+        MACRO END ( "No Error" )
+    ENDIF
+    
+    # Initialize formatted report with CAD model snapshot
+    FORMATTED_REPORT CREATE USING_LAYOUT ( "report 1", $reportPath )
+    REPORT_ITEM OPTIONS DESTINATION ( "Tree View" )
+    TREEVIEW REFERENCE SELECT ( 1 )
+    VIEW POSE ISOMETRIC ( "+X-Y-Z" )
+    PROBE DISPLAY DIGITAL_READOUT ( "Off" )
+    VIEW POSE CENTER_ON_OBJECTS (  )
+    REPORT_ITEM SNAPSHOT CAPTURE ( "profile" )
+    PROBE DISPLAY DIGITAL_READOUT ( "On" )
+    
+    # "profile_pic" is built in to the custom formatted report.
+    # Changing this argument will result in error.
+    FORMATTED_REPORT ITEM ASSIGN_ITEM ( "profile", "report 1", "profile_pic" )
+    REPORT_ITEM OPTIONS DESTINATION ( "Active Formatted Report" )
+    
+    # Set program settings
+    MACRO EXEC ( "${macroPath}\settings.pwmacro")
+    
+ELSE
+    
+    # Prompt user for project reset
+    MACRO INPUT QUESTION ( restart, {"This action will delete all existing objects and reset your project.", "Would you like to continue?"} )
+    
+    IF $restart == 1
+        MACRO EXEC ( "${macroPath}\workspace-reset.pwmacro" )
+        # "Error" status will prompt the parent script to
+        # recall this script.
+        # This allows the user to reset the workspace and
+        # re-import a new CAD file with a single command.
+        MACRO END ( "Error" )
+    ENDIF
+    
+ENDIF
