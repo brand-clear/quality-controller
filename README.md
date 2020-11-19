@@ -1,2 +1,2 @@
 # quality-controller
-Guided quality control program for both inspectors and supervisors
+Provides an interface for reviewing, approving, rejecting, and distributing quality control inspection reports.
