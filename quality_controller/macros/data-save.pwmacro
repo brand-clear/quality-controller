@@ -1,23 +1,31 @@
 version "5.0"
 #==================================================
 # This script collects inspection data and saves it
-# to a csv file.
+# the data to csv files.
 #
 # The following "shared" variables were created via
 # external scripts and saved to local variables of
 # the same name:
-# "startTime"
-# "alignMethod"
+#   "startTime"
+#   "alignMethod"
 #--------------------------------------------------
 
 
 DECLARE startTime
 DECLARE endTime
 DECLARE elapsedTime
-DECLARE refName
+DECLARE refName $1
+DECLARE inspector $2
 DECLARE featureCount
 DECLARE alignMethod
+DECLARE year
+DECLARE month
+DECLARE day
+DECLARE hour
 DECLARE csvPath "Q:\Quality Control\quality_controller\data\cost.csv"
+DECLARE dataPath "Q:\Quality Control\quality_controller\data\inspection_data\${refName}.csv"
+DECLARE reportItemCount
+DECLARE featureReportItemIndex 3
 
 
 # Get elapsed time
@@ -27,12 +35,31 @@ SET elapsedTime EXPR ( $endTime - $startTime )
 SET elapsedTime EXPR ( $elapsedTime / 60000 )
 MACRO ECHO ( "${elapsedTime} minutes" )
 
-# Get method of alignment
+
+# Get method of alignment and feature info
 MACRO SHARED_VARIABLE GET_VALUE ( "alignMethod", alignMethod )
-
-# Get part info
 TREEVIEW FEATURE COUNT GET ( featureCount )
-TREEVIEW REFERENCE NAME GET ( refName )
 
-# Save data to csv file
-DATA_FILE APPEND LINES ( $csvPath, "${refName}, ${alignMethod}, ${featureCount}, ${elapsedTime}" )
+# Save cost data to csv file
+SYSTEM DATE_TIME GET ( year, month, day, hour )
+DATA_FILE APPEND LINES ( $csvPath, "${refName}, ${alignMethod}, ${featureCount}, ${elapsedTime}, ${year}, ${month}, ${day}, ${hour}, ${inspector}")
+
+
+# Set item destination and check for existing feature table
+TREEVIEW OBJECT SELECT NONE
+REPORT_ITEM OPTIONS DESTINATION ( "Tree View" )
+TREEVIEW REPORT_ITEM COUNT GET ( reportItemCount )
+IF $reportItemCount == 4
+    TREEVIEW REPORT_ITEM SELECT ( $featureReportItemIndex )
+    EDIT OBJECT DELETE (  )
+ENDIF
+
+
+# Send Feature items to report table
+TREEVIEW FEATURE SELECT ALL
+REPORT_ITEM TABLE FROM_SELECTED_FEATURES_ONE_TABLE (  )
+TREEVIEW OBJECT SELECT NONE
+
+# Export items to CSV
+TREEVIEW REPORT_ITEM SELECT ( $featureReportItemIndex )
+FILE EXPORT_REPORT CSV_FILE ( "${dataPath}" )

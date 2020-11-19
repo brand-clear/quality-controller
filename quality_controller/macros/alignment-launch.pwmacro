@@ -13,6 +13,7 @@ DECLARE align2D
 DECLARE align3DHole
 DECLARE align3DKey
 DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
+#DECLARE macroPath "C:\Users\mcclbra\Desktop\development\quality-controller-master\quality_controller\macros"
 
 
 MACRO SHARED_VARIABLE DELETE ( "alignMethod" )

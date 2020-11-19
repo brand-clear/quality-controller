@@ -1,0 +1,97 @@
+version "5.0"
+#====================================================
+# Guide data processing from scratch to DRF.
+#----------------------------------------------------
+
+
+DECLARE refObject
+DECLARE dataObject
+DECLARE stepPath "Q:\DRAFT\_REVERSE ENGINEERING"
+
+
+# Get CAD
+MACRO GUIDING_INSTRUCTIONS ( "On", "Import CAD model (reference object)", "Press play to begin", , "On" )
+MACRO INPUT FILE_PATH ( refObject, , $stepPath )
+FILE IMPORT_REFERENCE NURBS STEP ( $refObject )
+
+# Get scan
+MACRO GUIDING_INSTRUCTIONS ( "On", "Import scan (data object)", "Press play to begin", , "On" )
+MACRO INPUT FILE_PATH ( dataObject, , $stepPath )
+FILE IMPORT_DATA POLYGONAL_MODEL ( $dataObject, "stl" )
+
+# Fit scan to CAD
+ALIGN BEST_FIT DATA_TO_REFERENCE OPTIONS CREATE REFERENCE_OBJECTS ( "All" )
+ALIGN BEST_FIT DATA_TO_REFERENCE OPTIONS CREATE DATA_OBJECTS ( "Surface" )
+ALIGN BEST_FIT DATA_TO_REFERENCE CREATE FIT_TO_REFERENCE_OBJECT_SURFACES USING_PRE_ALIGNMENT POINT_PAIRS ( "best-fit to ref 1" )
+
+# Create color map
+MEASURE DATA_COLOR_MAP REFERENCE_SURFACE OPTIONS REFERENCE_OBJECTS ( "All" )
+MEASURE DATA_COLOR_MAP REFERENCE_SURFACE OPTIONS DATA_OBJECTS ( "Surface" )
+MEASURE DATA_COLOR_MAP REFERENCE_SURFACE CREATE ( "dev to surface 1" )
+
+# Prompt user for DRF
+DECLARE useDRF
+MACRO INPUT INTEGER ( useDRF, , "Would you like to add a Datum Reference Frame Alignment?", 1 )
+
+IF $useDRF == 1
+    # Select datum features
+    MACRO GUIDING_INSTRUCTIONS ( "On", "Select datum features from CAD model", "Right click when done", , "Off" )
+    FEATURE PRIMITIVE EXTRACT_FROM_NURBS PICK
+    
+    
+    DECLARE featureCount
+    DECLARE contentType
+    DECLARE counter 1
+    
+    
+    # Verify that CAD features are created as nominal
+    TREEVIEW FEATURE COUNT GET ( featureCount )
+    WHILE $counter <= $featureCount
+        TREEVIEW FEATURE SELECT NONE ( "On" )
+        TREEVIEW FEATURE SELECT ( $counter )
+        TREEVIEW FEATURE PROPERTIES CONTENTS GET ( contentType )
+        IF $contentType == "Measured"
+            FEATURE NOMINAL_MEASURED SWAP_PRIMITIVES ( )
+        ENDIF
+        ++counter
+    ENDWHILE
+    
+    # User must manufally assign features as datums
+    MACRO GUIDING_INSTRUCTIONS ( "On", "Make sure datums are identified", "Use feature properties for assignment", , "On" )
+    
+    # Extract measured values from nominal features
+    TREEVIEW FEATURE SELECT ALL ( "On" )
+    MEASURE EXTRACT MEASURED (  )
+    
+    # Reset counter variable
+    SET counter 1
+    
+    
+    DECLARE featureName
+    DECLARE datumArray
+    DECLARE datumFound
+    DECLARE datumCount 0
+    
+    
+    # Count the number of existing datums
+    WHILE $counter <= $featureCount
+        TREEVIEW FEATURE NAME GET ( $counter, featureName )
+        MACRO STRING FIND_FIRST ( $featureName, "datum", , datumFound)
+        IF $datumFound != 0
+            ++datumCount
+        ENDIF
+        ++counter
+    ENDWHILE
+    
+    # Align to existing datums
+    IF $datumCount == 1
+        ALIGN DATUM_REFERENCE_FRAMES CREATE ( "A")
+        ALIGN DATUM_REFERENCE_FRAMES TRANSFORM ( "A" )
+    ELSEIF $datumCount == 2
+        ALIGN DATUM_REFERENCE_FRAMES CREATE ( "A", "B")
+        ALIGN DATUM_REFERENCE_FRAMES TRANSFORM ( "A B" )
+    ELSEIF $datumCount == 3
+        ALIGN DATUM_REFERENCE_FRAMES CREATE ( "A", "B", "C" )
+        ALIGN DATUM_REFERENCE_FRAMES TRANSFORM ( "A B C" )   
+    ENDIF
+ENDIF

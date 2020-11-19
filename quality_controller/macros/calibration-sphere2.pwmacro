@@ -1,0 +1,75 @@
+version "5.0"
+#======================================================
+# ---- InnovMetric Software Inc.
+# ---- Module  :    PolyWorks|Inspector
+# ---- Version :    2017 IR5 (build 4775)
+# ---- Date    :    Wednesday, June 20, 2018 - 09:29:33
+#------------------------------------------------------
+
+# Sphere 2 variables
+DECLARE sphere2_nominal 1.5002
+DECLARE sphere2_R1_name
+DECLARE sphere2_R1_dev
+DECLARE sphere2_R2_name
+DECLARE sphere2_R2_dev
+DECLARE sphere2_R3_name
+DECLARE sphere2_R3_dev
+DECLARE upper_tolerance 0.0010
+DECLARE lower_tolerance -0.0010
+
+# Probe and record 3 measurement readings for Sphere 2
+# Each measurement is recorded at a different arm position
+
+# Delete previous session if this macro is re-run
+TREEVIEW FEATURE SELECT RANGE ( 4, 6, "On" )
+EDIT OBJECT DELETE 
+
+MACRO PAUSE ( "Set Arm", "Set arm position at 0 degrees." )
+
+# Probe 1st reading
+FEATURE PRIMITIVE SPHERE PROBE ( , "Sphere 2 R1" )
+TREEVIEW FEATURE SPHERE SELECT ( 4 )
+MEASURE CONTROL ADD ( "GD&T", "Spherical Diameter", sphere2_R1_name, )
+MEASURE CONTROL NOMINAL ( $sphere2_R1_name, $sphere2_nominal )
+MEASURE CONTROL TOLERANCE_ZONE LIMITS ( $sphere2_R1_name, $upper_tolerance, , , $lower_tolerance, )
+MEASURE CONTROL DEVIATION GET ( $sphere2_R1_name, sphere2_R1_dev )
+TREEVIEW FEATURE SELECT NONE ( "On" )
+
+MACRO PAUSE ( "Set Arm", "Move arm position to 90 degrees" )
+
+# Probe 2nd reading
+FEATURE PRIMITIVE SPHERE PROBE ( , "Sphere 2 R2" )
+TREEVIEW FEATURE SPHERE SELECT ( 5 )
+MEASURE CONTROL ADD ( "GD&T", "Spherical Diameter", sphere2_R2_name, )
+MEASURE CONTROL NOMINAL ( $sphere2_R2_name, $sphere2_nominal )
+MEASURE CONTROL TOLERANCE_ZONE LIMITS ( $sphere2_R2_name, $upper_tolerance, , , $lower_tolerance, )
+MEASURE CONTROL DEVIATION GET ( $sphere2_R2_name, sphere2_R2_dev )
+TREEVIEW FEATURE SELECT NONE ( "On" )
+
+MACRO PAUSE ( "Set Arm", "Move arm position to 180 degrees" )
+
+# Probe 3rd reading
+FEATURE PRIMITIVE SPHERE PROBE ( , "Sphere 2 R3" )
+TREEVIEW FEATURE SPHERE SELECT ( 6 )
+MEASURE CONTROL ADD ( "GD&T", "Spherical Diameter", sphere2_R3_name, )
+MEASURE CONTROL NOMINAL ( $sphere2_R3_name, $sphere2_nominal )
+MEASURE CONTROL TOLERANCE_ZONE LIMITS ( $sphere2_R3_name, $upper_tolerance, , , $lower_tolerance, )
+MEASURE CONTROL DEVIATION GET ( $sphere2_R3_name, sphere2_R3_dev )
+TREEVIEW FEATURE SELECT NONE ( "On" )
+
+# Select all features and set/remove controls
+TREEVIEW FEATURE SELECT RANGE ( 4, 6, "On" )
+MEASURE CONTROL REMOVE ( "Z", )
+MEASURE CONTROL REMOVE ( "Y", )
+MEASURE CONTROL REMOVE ( "X", )
+MEASURE CONTROL REMOVE ( "Diameter", )
+
+TREEVIEW FEATURE SELECT NONE ( "On" )
+
+IF $sphere2_R1_dev > .0005
+    MACRO END ( "Error" )
+ELSEIF $sphere2_R2_dev > .0005
+    MACRO END ( "Error" )
+ELSEIF $sphere2_R3_dev > .0005
+    MACRO END ( "Error" )
+ENDIF 

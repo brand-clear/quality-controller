@@ -6,7 +6,12 @@ version "5.0"
 # Parameters
 # ----------
 # $1 : Datum label
-#     {"A", "B", "C"}
+#     {"B", "C"}
+#
+# Notes
+# -----
+# A datum label of "C" indicates this feature is a
+# hole.
 #-----------------------------------------------------
 
 
@@ -18,9 +23,12 @@ DECLARE cylindricity
 DECLARE tryAgain 1
 DECLARE errorStatus
 DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
+#DECLARE macroPath "C:\Users\mcclbra\Desktop\development\quality-controller-master\quality_controller\macros"
 
 
 MACRO GUIDING_INSTRUCTIONS ( "On", "Probe ${name}", , , "off")
+
+FEATURE PRIMITIVE CYLINDER OPTIONS PROBE STANDARD USE_CONSTRAINING_PLANE ( "Off" )
 
 WHILE $tryAgain == 1
     
@@ -32,7 +40,7 @@ WHILE $tryAgain == 1
     SET tolerance 0.003
     MACRO EXEC ( "${macroPath}\metric-sansdatum.pwmacro", measured, tolerance, controlName )
     IF $measured > $tolerance
-        MACRO INPUT QUESTION ( tryAgain, {"The measured cylindricity exceeeds the datum tolerance of ${tolerance}.", "Do you want to try again?"} )
+        MACRO INPUT QUESTION ( tryAgain, {"The measured cylindricity exceeds the datum tolerance of ${tolerance}.", "Do you want to try again?"} )
         IF  $tryAgain == 1
             MEASURE CONTROL REMOVE ( $controlName )
             CONTINUE
@@ -47,8 +55,25 @@ WHILE $tryAgain == 1
     # when trying to restore the feature.
     MACRO GET_ERROR_STATUS ( errorStatus )
     IF $errorStatus == "Error"
+        MACRO PAUSE ( $errorStatus, "No measured datum cylinder found." )
         MACRO END ( "Error" )
     ENDIF
+    
+    
+    IF $1 == "C"
+        # Add hole feature controls
+        MEASURE CONTROL ADD ( "GD&T", "Position", controlName )
+        MEASURE CONTROL TOLERANCE_ZONE LIMITS ( $controlName, 0.005, , , , )
+        MEASURE CONTROL DATUM_FEATURES ( $controlName, "A", "B", , )
+    ENDIF
+    
+    MEASURE CONTROL ADD ( "GD&T", "Perpendicularity", controlName, )
+    MEASURE CONTROL TOLERANCE_ZONE LIMITS ( $controlName, 0.002, , , , )
+    MEASURE CONTROL DATUM_FEATURES ( $controlName, "A", , , )
+    
+    
+    MEASURE CONTROL ADD ( "Dimensional", "Length", controlName )
+    MEASURE CONTROL TOLERANCE_ZONE LIMITS ($controlName, 1.000, , , -1.000 )
     
     MACRO EXEC ( "${macroPath}\capture-snapshot.pwmacro" )
     

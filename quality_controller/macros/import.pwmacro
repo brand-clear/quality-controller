@@ -13,7 +13,7 @@ DECLARE errorStatus
 DECLARE restart
 DECLARE refPath "Q:\Quality Control\quality_controller\data\cad models"
 DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
-DECLARE reportPath "Q:\DRAFT\Polyworks\Polyworks\Report Layouts\Sulzer QC Portrait.ezl"
+DECLARE reportPath "Q:\DRAFT\Polyworks\Report Layouts\Sulzer QC Portrait.ezl"
 
 
 TREEVIEW REFERENCE COUNT GET ( refCount )

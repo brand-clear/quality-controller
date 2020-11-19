@@ -13,6 +13,7 @@ version "5.0"
 DECLARE finished 0
 DECLARE previousCount
 DECLARE currentCount
+DECLARE controlName
 DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
 
 
@@ -40,6 +41,11 @@ WHILE $finished == 0
         MACRO EXEC ( "${macroPath}\controls-cylinder-hole.pwmacro" )
         
     ENDIF
+    
+    
+    MEASURE CONTROL ADD ( "Dimensional", "Length", controlName )
+    MEASURE CONTROL TOLERANCE_ZONE LIMITS ($controlName, 1.000, , , -1.000 )
+    
     
     # Send data to report
     MACRO EXEC ( "${macroPath}\capture-snapshot.pwmacro" )

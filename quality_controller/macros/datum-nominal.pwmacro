@@ -35,12 +35,13 @@ IF $errorStatus == "Error"
     MACRO END ( "Error" )
 ENDIF
 
+
 TREEVIEW FEATURE COUNT GET ( currentCount )
 
 
 # Validate environment
 IF EXPR_I ( $previousCount + 1 ) != $currentCount
-    MACRO PAUSE ( "Error", "Invalid datum environment: Inconsistent feature creation." )
+    MACRO PAUSE ( "Error", "Invalid datum environment: Feature count" )
     MACRO END ( "Error" )
 ENDIF
 

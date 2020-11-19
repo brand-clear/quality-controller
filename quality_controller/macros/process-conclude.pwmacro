@@ -5,4 +5,5 @@ version "5.0"
 #-------------------------------------------------------
 MACRO GUIDING_INSTRUCTIONS ( "Off" )
 TREEVIEW FEATURE VIEW HIDE ALL
+TREEVIEW CUSTOM_MEASUREMENT VIEW HIDE ALL
 TREEVIEW FEATURE SELECT NONE (  )

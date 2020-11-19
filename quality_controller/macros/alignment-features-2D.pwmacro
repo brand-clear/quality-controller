@@ -1,0 +1,53 @@
+version "5.0"
+#=====================================================
+# This script prompts the user to define the primary
+# and secondary alignment features.
+#-----------------------------------------------------
+
+
+DECLARE index
+DECLARE measured "Total Runout"
+DECLARE tolerance 0.001
+DECLARE runoutControl
+DECLARE errorStatus
+DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
+#DECLARE macroPath "C:\Users\mcclbra\Desktop\development\quality-controller-master\quality_controller\macros"
+
+
+# Define nominal datum components
+MACRO EXEC ( "${macroPath}\datum-nominal.pwmacro", "plane", "A" )
+MACRO GET_ERROR_STATUS ( errorStatus )
+IF $errorStatus == "Error"
+    MACRO EXEC ( "${macroPath}\process-reset.pwmacro" )
+    MACRO END ( "Error" )
+ENDIF
+
+
+MACRO EXEC ( "${macroPath}\datum-nominal.pwmacro" , "cylinder", "B" )
+MACRO GET_ERROR_STATUS ( errorStatus )
+IF $errorStatus == "Error"
+    MACRO EXEC ( "${macroPath}\process-reset.pwmacro" )
+    MACRO END ( "Error" )
+ENDIF
+
+
+# Define measured datum components
+MACRO EXEC ( "${macroPath}\datum-measured-plane.pwmacro", "A" )
+MACRO GET_ERROR_STATUS ( errorStatus )
+IF $errorStatus == "Error"
+    MACRO EXEC ( "${macroPath}\process-reset.pwmacro" )
+    MACRO END ( "Error" )
+ENDIF
+
+
+MACRO EXEC ( "${macroPath}\datum-measured-cylinder.pwmacro", "B" )
+MACRO GET_ERROR_STATUS ( errorStatus )
+IF $errorStatus == "Error"
+    MACRO EXEC ( "${macroPath}\process-reset.pwmacro" )
+    MACRO END ( "Error" )
+ENDIF
+
+
+# Prep for next operation
+MACRO EXEC ( "${macroPath}\process-conclude.pwmacro" )
+

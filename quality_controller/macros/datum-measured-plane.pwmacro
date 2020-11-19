@@ -6,14 +6,12 @@ version "5.0"
 # Parameters
 # ----------
 # $1 : Datum label
-#     {"A", "B", "C"}
-#
-# $2 : Datum reference
-#     {"A", "B", "C"}
+#     {"A", "B"}
 #-----------------------------------------------------
 
 
 DECLARE name "datum plane $1"
+DECLARE datumRef
 DECLARE measured
 DECLARE tolerance
 DECLARE formControl
@@ -22,6 +20,7 @@ DECLARE profileControl
 DECLARE tryAgain 1
 DECLARE errorStatus
 DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
+#DECLARE macroPath "C:\Users\mcclbra\Desktop\development\quality-controller-master\quality_controller\macros"
 
 
 MACRO GUIDING_INSTRUCTIONS ( "On", "Probe ${name}", , , "off")
@@ -45,10 +44,6 @@ WHILE $tryAgain == 1
         SET tryAgain 0
     ENDIF
     
-    # Get runout
-    SET measured "Total Runout"
-    SET tolerance 0.001
-    MACRO EXEC ( "${macroPath}\metric-runout.pwmacro", measured, tolerance, runoutControl, $2, "" )
     
     # Get profile
     SET measured "Surface Profile"
@@ -64,6 +59,7 @@ WHILE $tryAgain == 1
     # when trying to restore the feature.
     MACRO GET_ERROR_STATUS ( errorStatus )
     IF $errorStatus == "Error"
+        MACRO PAUSE ( $errorStatus, "No measured datum plane found." )
         MACRO END ( "Error" )
     ENDIF
     

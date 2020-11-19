@@ -8,6 +8,8 @@ DECLARE refObject
 DECLARE report
 DECLARE inspector
 DECLARE revision
+DECLARE checkCount
+DECLARE filename
 DECLARE errorStatus
 DECLARE macroPath "Q:\Quality Control\quality_controller\macros"
 DECLARE reportPath "Q:\Quality Control\quality_controller\data\submitted reports"
@@ -29,22 +31,30 @@ IF $refObject == "0"
     MACRO END ( "Error" )
 ENDIF
 
-MACRO INPUT STRING ( revision, , "Revision number:", "001" )
+MACRO INPUT STRING ( revision, , "Revision number:", "000" )
 IF $revision == "0"
     MACRO END ( "Error" )
 ENDIF
+
+MACRO INPUT STRING ( checkCount, , "QC check:", "1" )
+IF $checkCount == "0"
+    MACRO END ( "Error" )
+ENDIF
+
 
 # Assign user input to report fields
 FORMATTED_REPORT PROPERTIES STANDARD ( $report, "Title", $refObject)
 FORMATTED_REPORT PROPERTIES STANDARD ( $report, "Author", $inspector)
 FORMATTED_REPORT PROPERTIES CUSTOM ( $report, "Revision", $revision)
 
-# Export report as pdf
-FILE EXPORT_FORMATTED_REPORT PDF ( "${reportPath}\${refObject}.pdf", "On", $report )
+SET filename "${refObject}_QC${checkCount}"
 
-MACRO EXEC ( "${macroPath}\data-save.pwmacro" )
+# Export report as pdf
+FILE EXPORT_FORMATTED_REPORT PDF ( "${reportPath}\${filename}.pdf", "On", $report )
 
 MACRO GET_ERROR_STATUS ( errorStatus )
 IF $errorStatus == "Error"
     MACRO PAUSE ( "Warning", "An error occurred while saving this report." )
 ENDIF
+
+MACRO EXEC ( "${macroPath}\data-save.pwmacro", $filename, $inspector )

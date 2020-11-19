@@ -18,3 +18,8 @@ MACRO EXEC ( "${macroPath}\metric-sansdatum.pwmacro", measured, tolerance, contr
 SET measured "Position"
 SET tolerance 0.020
 MACRO EXEC ( "${macroPath}\metric-sansdatum.pwmacro", measured, tolerance, control )
+
+
+MEASURE CONTROL ADD ( "GD&T", "Perpendicularity", control, )
+MEASURE CONTROL TOLERANCE_ZONE LIMITS ( $control, 0.005, , , , )
+MEASURE CONTROL DATUM_FEATURES ( $control, "A", , , )
